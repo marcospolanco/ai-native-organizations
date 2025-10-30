@@ -1,4 +1,4 @@
-# AI Native Organizations Job Description
+# AI Native Organizations
 
 A proposed framework for defining engineering roles in the age of AI-assisted development.
 
@@ -14,7 +14,7 @@ line themselves—but most job descriptions still assume purely manual implement
 
 **This repository proposes a solution.**
 
-We define the **Senior Software Orchestration Engineer**: a role focused on 
+We define the **[Senior Software Orchestration Engineer](./senior-software-orchestration-engineer.md)**: a role focused on 
 designing, governing, and improving AI-augmented development systems rather than 
 maximizing personal code output.
 
