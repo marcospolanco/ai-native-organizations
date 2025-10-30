@@ -1,6 +1,6 @@
-# Agentic Engineering Framework
+# AI Native Organizations Job Description
 
-A proposed standard for defining engineering roles in the age of AI-assisted development.
+A proposed framework for defining engineering roles in the age of AI-assisted development.
 
 ---
 
