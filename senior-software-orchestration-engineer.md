@@ -1,8 +1,4 @@
-# AI Native Organizations
-
-**Senior Software Orchestration Engineer**
-
-A practical, community-maintained framework for defining the next generation of senior engineering roles in the age of AI-assisted development.
+# Senior Software Orchestration Engineer
 
 > **Purpose:**  
 > Senior Engineers no longer write all the code themselves — they design the workflows, guardrails, and knowledge systems that ensure human-AI collaboration produces reliable, ethical, and high-impact software.
