@@ -5,6 +5,7 @@ import * as Accordion from "@radix-ui/react-accordion";
 
 import type { Message } from "@/lib/messages";
 import { cn } from "@/lib/utils";
+import { Response } from "@/components/ai-elements/response";
 
 type MessageProps = {
   message: Message;
@@ -14,9 +15,9 @@ export const MessageCard = forwardRef<HTMLLIElement, MessageProps>(
   ({ message }, ref) => {
     const hasDetails = Boolean(message.reasoning ?? message.sources?.length);
     
-    // Layout similar to design.html - user on right, assistant on left
+    // Layout - user messages on right, assistant messages on left with consistent margins
     const isUser = message.role === "user";
-    const alignmentClassName = isUser ? "justify-end" : "justify-start flex-row-reverse";
+    const alignmentClassName = isUser ? "justify-end pr-4" : "justify-start pl-4";
 
     return (
       <li
@@ -42,7 +43,11 @@ export const MessageCard = forwardRef<HTMLLIElement, MessageProps>(
           )}
           
           {/* Main Response */}
-          <p>{message.body}</p>
+          {isUser ? (
+            <p>{message.body}</p>
+          ) : (
+            <Response>{message.body}</Response>
+          )}
           
           {/* Reasoning Toggle for Assistant Messages */}
           {!isUser && message.reasoning && (
