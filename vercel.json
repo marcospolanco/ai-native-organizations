@@ -1,6 +1,5 @@
 {
-  "buildCommand": "pnpm install && pnpm run build",
-  "installCommand": "pnpm install",
-  "rootDirectory": "examples/apps/zenchat"
+  "buildCommand": "cd examples/apps/zenchat && pnpm install && pnpm run build",
+  "installCommand": "cd examples/apps/zenchat && pnpm install"
 }
 
