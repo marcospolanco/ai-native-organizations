@@ -1,0 +1,15 @@
+
+> zenchat@0.1.0 test /Users/marcospolanco/Developer/open/ai-elements/zenchat
+> jest
+
+(node:34906) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+PASS app/__tests__/layout.test.tsx
+  RootLayout
+    ✓ renders the Zen Chat header (2 ms)
+
+Test Suites: 1 passed, 1 total
+Tests:       1 passed, 1 total
+Snapshots:   0 total
+Time:        1.96 s
+Ran all test suites.

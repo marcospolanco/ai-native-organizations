@@ -1,0 +1,46 @@
+@import "tailwindcss";
+
+:root {
+  --background: 0 0% 100%;
+  --foreground: 220 13% 10%;
+  --muted: 220 15% 95%;
+  --muted-foreground: 220 10% 42%;
+  --accent: 256 94% 61%;
+  --accent-foreground: 0 0% 100%;
+  --border: 220 14% 90%;
+  --ring: 256 94% 61%;
+  --radius-xl: 1.5rem;
+  --radius-lg: 1rem;
+  --radius-md: 0.75rem;
+  --radius-sm: 0.5rem;
+  --header-height: 4.5rem;
+}
+
+.dark {
+  --background: 222 47% 5%;
+  --foreground: 210 20% 96%;
+  --muted: 220 15% 16%;
+  --muted-foreground: 220 10% 66%;
+  --accent: 256 94% 67%;
+  --accent-foreground: 0 0% 100%;
+  --border: 220 14% 24%;
+  --ring: 256 94% 67%;
+}
+
+* {
+  border-color: hsl(var(--border));
+}
+
+body {
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-feature-settings:
+    "rlig" 1,
+    "calt" 0;
+  text-rendering: optimizeLegibility;
+}
+
+a,
+button {
+  cursor: pointer;
+}

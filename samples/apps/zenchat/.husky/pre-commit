@@ -1,0 +1,5 @@
+#!/bin/sh
+npm run lint -- --max-warnings=0
+npm run format
+npm run test:ci
+npx lint-staged
