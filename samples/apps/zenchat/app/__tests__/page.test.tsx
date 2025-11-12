@@ -25,8 +25,7 @@ describe("HomePage", () => {
     });
     const messageList = screen.getByTestId("message-list");
     const conversationRegion = messageList.closest('[role="region"]');
-    const previewMessages = within(messageList).getAllByRole("article");
-    const reasoningTrigger = screen.getAllByRole("button", { name: /reasoning/i })[0];
+    const messages = within(messageList).queryAllByRole("article");
 
     expect(conversationRegion).not.toBeNull();
     expect(conversationRegion as HTMLElement).toHaveAttribute("aria-live", "polite");
@@ -36,8 +35,7 @@ describe("HomePage", () => {
     expect(modelSelect).toHaveTextContent("GPT-4o");
     expect(sendButton).toBeEnabled();
 
-    expect(previewMessages).toHaveLength(4);
-    expect(reasoningTrigger).toBeInTheDocument();
+    expect(messages).toHaveLength(0);
   });
 });
 

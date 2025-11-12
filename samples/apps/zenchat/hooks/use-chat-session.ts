@@ -61,24 +61,44 @@ export function useChatSession(options: UseChatSessionOptions = {}): UseChatSess
 
   const [activeStream, setActiveStream] = useState<StreamableValue<string> | undefined>();
   const [assistantMessageId, setAssistantMessageId] = useState<string | null>(null);
-  const seededRef = useRef(false);
+  const hasSeededRef = useRef(false);
 
   const [streamedText, streamError, isPendingStream] = useStreamableValue(activeStream);
 
+  // Initialize messages only once on mount if initialMessages are provided
+  // and store is empty
   useEffect(() => {
-    if (seededRef.current) {
+    // Only seed once, and only if we haven't seeded yet and initialMessages exist
+    if (hasSeededRef.current) {
       return;
     }
 
-    if (!messages.length && initialMessages.length) {
+    // Check if store is empty by reading messages length
+    const currentMessagesLength = useChatStore.getState().messages.length;
+    
+    if (currentMessagesLength === 0 && initialMessages.length > 0) {
       resetStore(initialMessages);
     }
 
-    seededRef.current = true;
-  }, [initialMessages, messages.length, resetStore]);
+    hasSeededRef.current = true;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run once on mount - intentionally empty deps
 
   useEffect(() => {
-    if (!assistantMessageId) {
+    // Only process if we have an active stream and assistant message ID
+    if (!assistantMessageId || !activeStream) {
+      return;
+    }
+
+    // Verify the assistant message exists in the store before updating
+    const currentMessages = useChatStore.getState().messages;
+    const assistantMessage = currentMessages.find((m) => m.id === assistantMessageId);
+    
+    // If message doesn't exist, clear state and return
+    if (!assistantMessage) {
+      setStreaming(false);
+      setActiveStream(undefined);
+      setAssistantMessageId(null);
       return;
     }
 
@@ -91,6 +111,8 @@ export function useChatSession(options: UseChatSessionOptions = {}): UseChatSess
         meta: "Streaming failed",
       });
       setStreaming(false);
+      setActiveStream(undefined);
+      setAssistantMessageId(null);
 
       // Track streaming error
       trackStreamingError({
@@ -108,14 +130,20 @@ export function useChatSession(options: UseChatSessionOptions = {}): UseChatSess
 
     const update: ChatMessageUpdate = {};
 
-    if (streamedText !== undefined) {
+    // Only update body if we have actual content (not just empty string)
+    // Only update if streamedText is different from current body to avoid unnecessary updates
+    if (streamedText !== undefined && streamedText !== "" && streamedText !== assistantMessage.body) {
       update.body = streamedText;
     }
 
     if (isPendingStream) {
-      update.meta = "Streaming response";
+      if (assistantMessage.meta !== "Streaming response") {
+        update.meta = "Streaming response";
+      }
     } else {
-      update.meta = undefined;
+      if (assistantMessage.meta !== undefined) {
+        update.meta = undefined;
+      }
     }
 
     if (Object.keys(update).length > 0) {
@@ -123,21 +151,53 @@ export function useChatSession(options: UseChatSessionOptions = {}): UseChatSess
     }
 
     if (!isPendingStream) {
+      // Stream has completed - check if we got content
+      // Check the message body in the store as it should have the final accumulated text
+      const updatedMessages = useChatStore.getState().messages;
+      const updatedAssistantMessage = updatedMessages.find((m) => m.id === assistantMessageId);
+      
+      // Check if we have content in either streamedText or the message body
+      const hasContent = 
+        (streamedText !== undefined && streamedText !== "") ||
+        (updatedAssistantMessage?.body !== undefined && updatedAssistantMessage.body !== "");
+      
+      if (!hasContent) {
+        // Stream completed but no content received
+        setError("No response received from the AI. Please check your API configuration and try again.");
+        updateMessage(assistantMessageId, {
+          meta: "No response received",
+        });
+      } else {
+        // Ensure the final streamed text is in the message body
+        if (streamedText !== undefined && streamedText !== "" && updatedAssistantMessage?.body !== streamedText) {
+          updateMessage(assistantMessageId, {
+            body: streamedText,
+            meta: undefined,
+          });
+        } else if (updatedAssistantMessage?.meta !== undefined) {
+          // Clear meta if content exists
+          updateMessage(assistantMessageId, {
+            meta: undefined,
+          });
+        }
+        
+        // Track successful streaming completion
+        const finalMessages = useChatStore.getState().messages;
+        trackStreamingCompleted({
+          model: selectedModel,
+          messageCount: finalMessages.length,
+          conversationLength: finalMessages.filter(m => ["user", "assistant"].includes(m.role)).length,
+        });
+      }
+      
+      // Clear stream state after processing
       setStreaming(false);
       setActiveStream(undefined);
       setAssistantMessageId(null);
-
-      // Track streaming completion
-      if (streamedText !== undefined) {
-        trackStreamingCompleted({
-          model: selectedModel,
-          messageCount: messages.length,
-          conversationLength: messages.filter(m => ["user", "assistant"].includes(m.role)).length,
-        });
-      }
     }
   }, [
     assistantMessageId,
+    activeStream,
     isPendingStream,
     setError,
     setStreaming,
@@ -145,7 +205,6 @@ export function useChatSession(options: UseChatSessionOptions = {}): UseChatSess
     streamedText,
     updateMessage,
     selectedModel,
-    messages,
   ]);
 
   const mutation = useMutation<SendMessageActionResult, Error, SubmitVariables>({
@@ -169,13 +228,22 @@ export function useChatSession(options: UseChatSessionOptions = {}): UseChatSess
     async (input: MessageComposerInput) => {
       setError(null);
 
-      const history = messages
+      // Clear any previous stream state before starting a new message
+      setActiveStream(undefined);
+      setAssistantMessageId(null);
+      setStreaming(false);
+
+      // Get current messages from store to ensure we have the latest state
+      const currentMessages = useChatStore.getState().messages;
+
+      const history = currentMessages
         .filter((message): message is Message & { role: "user" | "assistant" } =>
           ["user", "assistant"].includes(message.role),
         )
+        .filter((message) => message.body.trim().length > 0) // Only include messages with content
         .map((message) => ({
           role: message.role,
-          content: message.body,
+          content: message.body.trim(),
         }));
 
       const userMessageId = crypto.randomUUID();
@@ -190,7 +258,7 @@ export function useChatSession(options: UseChatSessionOptions = {}): UseChatSess
       // Track message sent event
       trackMessageSent({
         model: input.model || selectedModel,
-        messageCount: messages.length + 1,
+        messageCount: currentMessages.length + 1,
         conversationLength: history.length,
       });
 
@@ -207,6 +275,8 @@ export function useChatSession(options: UseChatSessionOptions = {}): UseChatSess
 
         if (result.stream) {
           const assistantId = crypto.randomUUID();
+          // Set assistant message ID first, then stream
+          // This ensures the effect knows which message to update
           setAssistantMessageId(assistantId);
           appendMessage({
             id: assistantId,
@@ -215,12 +285,14 @@ export function useChatSession(options: UseChatSessionOptions = {}): UseChatSess
             body: "",
             meta: "Streaming response",
           });
+          // Set stream after message is created to ensure proper sequencing
           setActiveStream(result.stream);
+          timer(); // Stop timer when stream is set up
 
           // Track streaming started
           trackStreamingStarted({
             model: input.model || selectedModel,
-            messageCount: messages.length + 1,
+            messageCount: currentMessages.length + 1,
           });
         } else {
           setStreaming(false);
@@ -241,7 +313,7 @@ export function useChatSession(options: UseChatSessionOptions = {}): UseChatSess
         observability.trackError(error, {
           messageId: userMessageId,
           model: input.model || selectedModel,
-          messageCount: messages.length + 1,
+          messageCount: currentMessages.length + 1,
         });
 
         const message = error.message;
@@ -253,7 +325,7 @@ export function useChatSession(options: UseChatSessionOptions = {}): UseChatSess
         });
       }
     },
-    [appendMessage, messages, mutation, selectedModel, setError, setStreaming, updateMessage],
+    [appendMessage, mutation, selectedModel, setError, setStreaming, updateMessage],
   );
 
   const resetConversation = useCallback(() => {
@@ -272,7 +344,20 @@ export function useChatSession(options: UseChatSessionOptions = {}): UseChatSess
     });
   }, [messages, initialMessages, resetStore, setError, setStreaming]);
 
-  const isSending = useMemo(() => mutation.isPending || isStreaming || isPendingStream, [
+  // isSending should be true when:
+  // 1. Mutation is pending (before server action returns)
+  // 2. We're actively streaming (isStreaming is true)
+  // 3. Stream is pending (isPendingStream is true)
+  // But once the stream is set up, mutation.isPending becomes false, so we rely on isStreaming/isPendingStream
+  const isSending = useMemo(() => {
+    // If we have an active stream, use streaming state
+    if (activeStream) {
+      return isStreaming || isPendingStream;
+    }
+    // Otherwise, use mutation pending state
+    return mutation.isPending || isStreaming;
+  }, [
+    activeStream,
     isPendingStream,
     isStreaming,
     mutation.isPending,

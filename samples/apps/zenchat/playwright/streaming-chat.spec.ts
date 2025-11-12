@@ -7,7 +7,7 @@ test.describe("Phase 5 - Client Streaming Integration", () => {
 
   test("should display loading indicator when sending message", async ({ page }) => {
     // Wait for page to load
-    await expect(page.getByRole("heading", { name: /Experience streaming responses/i })).toBeVisible();
+    await expect(page.getByRole("region", { name: /Conversation timeline/i })).toBeVisible();
 
     // Find the message input
     const messageInput = page.getByRole("textbox", { name: /Message prompt/i });
@@ -35,7 +35,7 @@ test.describe("Phase 5 - Client Streaming Integration", () => {
     // For now, we verify the UI structure supports streaming
 
     // Wait for page to load
-    await expect(page.getByRole("heading", { name: /Experience streaming responses/i })).toBeVisible();
+    await expect(page.getByRole("region", { name: /Conversation timeline/i })).toBeVisible();
 
     // Find the message input
     const messageInput = page.getByRole("textbox", { name: /Message prompt/i });
@@ -94,7 +94,7 @@ test.describe("Phase 5 - Client Streaming Integration", () => {
 
   test("should validate message input before submission", async ({ page }) => {
     // Wait for page to load
-    await expect(page.getByRole("heading", { name: /Experience streaming responses/i })).toBeVisible();
+    await expect(page.getByRole("region", { name: /Conversation timeline/i })).toBeVisible();
 
     // Find the message input
     const messageInput = page.getByRole("textbox", { name: /Message prompt/i });
@@ -116,7 +116,7 @@ test.describe("Phase 5 - Client Streaming Integration", () => {
 
   test("should display character count", async ({ page }) => {
     // Wait for page to load
-    await expect(page.getByRole("heading", { name: /Experience streaming responses/i })).toBeVisible();
+    await expect(page.getByRole("region", { name: /Conversation timeline/i })).toBeVisible();
 
     // Find the message input
     const messageInput = page.getByRole("textbox", { name: /Message prompt/i });

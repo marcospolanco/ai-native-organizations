@@ -45,37 +45,35 @@ export function InputComposer({
   const messageValue = watch("message");
   const effectiveIsSubmitting = isSubmitting || isSending;
   const messageErrorId = errors.message ? "message-error" : undefined;
+  const formRef = React.useRef<HTMLFormElement>(null);
 
   const handleFormSubmit = handleSubmit(async (values) => {
     await onSubmit?.(values);
     reset({ message: "", model: values.model });
   });
 
+  const handleKeyDown = React.useCallback(
+    (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+      // Submit on Enter (without Shift), allow Shift+Enter for new line
+      if (event.key === "Enter" && !event.shiftKey) {
+        event.preventDefault();
+        if (!effectiveIsSubmitting && formRef.current) {
+          formRef.current.requestSubmit();
+        }
+      }
+    },
+    [effectiveIsSubmitting],
+  );
+
   return (
     <form
-      aria-labelledby="message-composer-title"
+      ref={formRef}
       role="form"
+      aria-label="Message composer"
       onSubmit={handleFormSubmit}
       className="flex flex-col gap-4 rounded-2xl border border-border/60 bg-background/95 p-4 shadow-soft-sm sm:p-6"
       noValidate
     >
-      <div className="flex flex-col gap-1">
-        <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-          <h2
-            id="message-composer-title"
-            className="text-sm font-semibold uppercase tracking-[0.18em] text-muted-foreground"
-          >
-            Message composer
-          </h2>
-          <span className="text-xs text-muted-foreground">
-            Validated with react-hook-form &amp; Zod
-          </span>
-        </div>
-        <p className="text-sm text-muted-foreground">
-          Draft your next question, choose an assistant, and send when ready.
-        </p>
-      </div>
-
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:gap-6">
         <fieldset className="flex-1 space-y-2" disabled={effectiveIsSubmitting}>
           <label
@@ -97,6 +95,7 @@ export function InputComposer({
                 placeholder="Type your message..."
                 aria-invalid={Boolean(errors.message)}
                 aria-describedby={messageErrorId}
+                onKeyDown={handleKeyDown}
               />
             )}
           />
