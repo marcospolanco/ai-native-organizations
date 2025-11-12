@@ -40,21 +40,15 @@ function cloneSources(sources?: MessageSource[]): MessageSource[] | undefined {
 type ChatStoreState = {
   messages: Message[];
   selectedModel: ChatModelId;
-  isStreaming: boolean;
-  error: string | null;
   appendMessage: (message: Message) => void;
   updateMessage: (id: string, update: MessageUpdate) => void;
   setModel: (model: ChatModelId) => void;
-  setStreaming: (isStreaming: boolean) => void;
-  setError: (error: string | null) => void;
   reset: (messages?: Message[]) => void;
 };
 
-const createInitialState = (): Omit<ChatStoreState, "appendMessage" | "updateMessage" | "setModel" | "setStreaming" | "setError" | "reset"> => ({
+const createInitialState = (): Omit<ChatStoreState, "appendMessage" | "updateMessage" | "setModel" | "reset"> => ({
   messages: [],
   selectedModel: "gpt-4o",
-  isStreaming: false,
-  error: null,
 });
 
 export const useChatStore = create<ChatStoreState>()(
@@ -116,15 +110,6 @@ export const useChatStore = create<ChatStoreState>()(
       setModel: (selectedModel) =>
         set(() => ({
           selectedModel,
-        })),
-      setStreaming: (isStreaming) =>
-        set(() => ({
-          isStreaming,
-        })),
-      setError: (error) =>
-        set((state) => ({
-          ...state,
-          error,
         })),
       reset: (messages = []) =>
         set(() => ({
