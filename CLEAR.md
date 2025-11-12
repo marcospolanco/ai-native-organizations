@@ -1,6 +1,11 @@
 ### The CLEAR Method for Software Development
 
-This document outlines the CLEAR method, a structured, prompt-driven approach for iteratively developing an application. Each step in the process is initiated by a specific, well-defined prompt to ensure clarity and traceable outputs.
+The CLEAR method offers a shared language between entrepreneurs, engineers, and AI. It defines how your product behaves before anyone writes a line of code. It replaces chaos with structure:
+
+Context → Layout → Engineer → Assess → Run
+
+The CLEAR method is a structured, prompt-driven approach for iteratively developing an application. Each step in the process is initiated by a specific, well-defined prompt to ensure clarity and traceable outputs.
+
 
 ## Structured Prompts for Each Phase
 
