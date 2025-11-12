@@ -1,5 +1,5 @@
 {
-  "buildCommand": "cd examples/apps/zenchat && pnpm install && pnpm run build",
-  "installCommand": "cd examples/apps/zenchat && pnpm install"
+  "installCommand": "cd examples/apps/zenchat && corepack enable && corepack prepare pnpm@10.12.4 --activate && pnpm install",
+  "buildCommand": "cd examples/apps/zenchat && pnpm run build"
 }
 
