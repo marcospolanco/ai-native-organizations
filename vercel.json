@@ -1,0 +1,6 @@
+{
+  "buildCommand": "pnpm install && pnpm run build",
+  "installCommand": "pnpm install",
+  "rootDirectory": "examples/apps/zenchat"
+}
+
