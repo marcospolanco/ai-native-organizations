@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Elements Chat Design</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --radius: 0.625rem;
+            --background: oklch(1 0 0);
+            --foreground: oklch(0.147 0.004 49.25);
+            --card: oklch(1 0 0);
+            --card-foreground: oklch(0.147 0.004 49.25);
+            --popover: oklch(1 0 0);
+            --popover-foreground: oklch(0.147 0.004 49.25);
+            --primary: oklch(0.216 0.006 56.043);
+            --primary-foreground: oklch(0.985 0.001 106.423);
+            --secondary: oklch(0.97 0.001 106.424);
+            --secondary-foreground: oklch(0.216 0.006 56.043);
+            --muted: oklch(0.97 0.001 106.424);
+            --muted-foreground: oklch(0.553 0.013 58.071);
+            --accent: oklch(0.97 0.001 106.424);
+            --accent-foreground: oklch(0.216 0.006 56.043);
+            --destructive: oklch(0.577 0.245 27.325);
+            --border: oklch(0.923 0.003 48.717);
+            --input: oklch(0.923 0.003 48.717);
+            --ring: oklch(0.709 0.01 56.259);
+        }
+
+        .dark {
+            --background: oklch(0.147 0.004 49.25);
+            --foreground: oklch(0.985 0.001 106.423);
+            --card: oklch(0.216 0.006 56.043);
+            --card-foreground: oklch(0.985 0.001 106.423);
+            --popover: oklch(0.216 0.006 56.043);
+            --popover-foreground: oklch(0.985 0.001 106.423);
+            --primary: oklch(0.923 0.003 48.717);
+            --primary-foreground: oklch(0.216 0.006 56.043);
+            --secondary: oklch(0.268 0.007 34.298);
+            --secondary-foreground: oklch(0.985 0.001 106.423);
+            --muted: oklch(0.268 0.007 34.298);
+            --muted-foreground: oklch(0.709 0.01 56.259);
+            --accent: oklch(0.268 0.007 34.298);
+            --accent-foreground: oklch(0.985 0.001 106.423);
+            --destructive: oklch(0.704 0.191 22.216);
+            --border: oklch(1 0 0 / 10%);
+            --input: oklch(1 0 0 / 15%);
+            --ring: oklch(0.553 0.013 58.071);
+        }
+
+        body {
+            background: var(--background);
+            color: var(--foreground);
+        }
+
+        .bg-primary { background-color: var(--primary); }
+        .text-primary-foreground { color: var(--primary-foreground); }
+        .bg-secondary { background-color: var(--secondary); }
+        .text-secondary-foreground { color: var(--secondary-foreground); }
+        .bg-accent { background-color: var(--accent); }
+        .text-accent-foreground { color: var(--accent-foreground); }
+        .text-muted-foreground { color: var(--muted-foreground); }
+        .border-border { border-color: var(--border); }
+        .ring-ring { --tw-ring-color: var(--ring); }
+        .outline-ring { outline-color: var(--ring); }
+
+        .animate-spin {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .typing-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--muted-foreground);
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+            0%, 60%, 100% {
+                opacity: 0.3;
+                transform: translateY(0);
+            }
+            30% {
+                opacity: 1;
+                transform: translateY(-4px);
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen p-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold mb-8 text-center">AI Elements Chat Design System</h1>
+        
+        <!-- Chat Interface Container -->
+        <div class="max-w-4xl mx-auto p-6 relative size-full h-screen border border-border rounded-lg max-h-[700px] bg-card">
+            <div class="flex flex-col h-full">
+                
+                <!-- Messages Area -->
+                <div class="flex-1 overflow-y-auto p-4 space-y-4">
+                    
+                    <!-- User Message -->
+                    <div class="group flex w-full items-end justify-end gap-2 py-4 is-user">
+                        <div class="flex flex-col gap-2 rounded-lg text-sm text-primary-foreground px-4 py-3 overflow-hidden bg-primary max-w-[80%]">
+                            <p>Hello! Can you help me understand how machine learning works?</p>
+                        </div>
+                        <div class="w-8 h-8 rounded-full bg-primary ring-1 ring-border flex items-center justify-center text-primary-foreground text-xs font-bold">
+                            U
+                        </div>
+                    </div>
+
+                    <!-- Assistant Message with Sources -->
+                    <div class="group flex w-full items-end gap-2 py-4 is-assistant flex-row-reverse">
+                        <div class="w-8 h-8 rounded-full bg-secondary ring-1 ring-border flex items-center justify-center text-secondary-foreground text-xs font-bold">
+                            AI
+                        </div>
+                        <div class="flex flex-col gap-2 rounded-lg text-sm text-foreground px-4 py-3 overflow-hidden bg-secondary max-w-[80%]">
+                            <!-- Sources Toggle -->
+                            <div class="flex items-center gap-2 mb-2">
+                                <button class="text-xs bg-accent text-accent-foreground px-2 py-1 rounded hover:bg-accent/80 transition-colors">
+                                    📚 3 sources
+                                </button>
+                            </div>
+                            
+                            <!-- Main Response -->
+                            <p>I'd be happy to explain machine learning! Machine learning is a subset of artificial intelligence that enables systems to learn and improve from experience without being explicitly programmed.</p>
+                            
+                            <!-- Reasoning Toggle -->
+                            <div class="mt-2">
+                                <button class="text-xs text-muted-foreground hover:text-foreground transition-colors">
+                                    🧠 Show reasoning
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Assistant Message Continued -->
+                    <div class="group flex w-full items-end gap-2 py-4 is-assistant flex-row-reverse">
+                        <div class="w-8 h-8 rounded-full bg-secondary ring-1 ring-border flex items-center justify-center text-secondary-foreground text-xs font-bold">
+                            AI
+                        </div>
+                        <div class="flex flex-col gap-2 rounded-lg text-sm text-foreground px-4 py-3 overflow-hidden bg-secondary max-w-[80%]">
+                            <p>Here are the key concepts:</p>
+                            <ul class="list-disc pl-4 space-y-1">
+                                <li><strong>Training Data:</strong> The dataset used to teach the model</li>
+                                <li><strong>Algorithms:</strong> Mathematical procedures that find patterns</li>
+                                <li><strong>Features:</strong> Individual measurable properties of the data</li>
+                                <li><strong>Labels:</strong> The target outcomes we want to predict</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Streaming/Typing Indicator -->
+                    <div class="group flex w-full items-end gap-2 py-4 is-assistant flex-row-reverse">
+                        <div class="w-8 h-8 rounded-full bg-secondary ring-1 ring-border flex items-center justify-center text-secondary-foreground text-xs font-bold">
+                            AI
+                        </div>
+                        <div class="flex flex-col gap-2 rounded-lg text-sm text-foreground px-4 py-3 overflow-hidden bg-secondary max-w-[80%]">
+                            <div class="typing-indicator">
+                                <div class="typing-dot"></div>
+                                <div class="typing-dot"></div>
+                                <div class="typing-dot"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Input Area -->
+                <form class="w-full divide-y divide-border overflow-hidden rounded-xl border border-border bg-card shadow-sm mt-4">
+                    <textarea 
+                        class="w-full resize-none rounded-none border-none p-3 shadow-none outline-none ring-0 bg-transparent focus-visible:ring-0 text-foreground placeholder-muted-foreground"
+                        placeholder="What would you like to know?"
+                        rows="1"
+                    ></textarea>
+                    <div class="flex items-center justify-between p-1">
+                        <div class="flex items-center gap-1">
+                            <!-- Model Selector -->
+                            <button class="flex items-center gap-2 px-3 py-2 rounded-lg text-muted-foreground hover:bg-accent hover:text-foreground transition-colors font-medium">
+                                GPT 4o
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="flex items-center gap-1">
+                            <!-- Stop Button (shown when streaming) -->
+                            <button class="p-2 rounded-lg text-muted-foreground hover:bg-accent hover:text-foreground transition-colors">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <rect x="6" y="6" width="12" height="12" stroke-width="2"></rect>
+                                </svg>
+                            </button>
+                            <!-- Send Button -->
+                            <button class="p-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+  
+        <!-- Dark Mode Toggle -->
+        <div class="fixed bottom-8 right-8">
+            <button id="darkModeToggle" class="p-3 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-colors shadow-lg">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Dark mode toggle
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        const html = document.documentElement;
+        
+        darkModeToggle.addEventListener('click', () => {
+            html.classList.toggle('dark');
+            const isDark = html.classList.contains('dark');
+            
+            // Update icon
+            darkModeToggle.innerHTML = isDark ? 
+                `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                </svg>` :
+                `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+                </svg>`;
+        });
+
+        // Auto-resize textarea
+        const textarea = document.querySelector('textarea');
+        textarea.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 164) + 'px';
+        });
+
+        // Enter to submit, Shift+Enter for newline
+        textarea.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                // In a real app, this would submit the form
+                console.log('Form submitted');
+            }
+        });
+    </script>
+</body>
+</html>

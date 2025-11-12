@@ -125,105 +125,90 @@ export function ChatSession({ initialMessages = [] }: ChatSessionProps) {
   const isSending = isLoading;
 
   return (
-    <div className="flex flex-1 flex-col gap-6 rounded-3xl border border-border/60 bg-background/95 p-5 shadow-soft-lg transition-colors sm:p-8 lg:p-10">
-      <section
-        role="region"
-        aria-live="polite"
-        className="flex flex-1 flex-col gap-4"
-      >
-        <div className="flex justify-end">
-          <button
-            type="button"
-            onClick={resetConversation}
-            className="rounded-full border border-border/60 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-          >
-            Reset
-          </button>
-        </div>
-
-        <div className="relative flex-1 overflow-hidden rounded-2xl border border-border/60 bg-muted/20">
-          <div className="absolute inset-0 bg-linear-to-b from-transparent via-transparent to-muted/20" />
+    <div className="max-w-4xl mx-auto p-6 relative size-full h-screen border border-border rounded-lg bg-card">
+      <div className="flex flex-col h-full">
+        
+        {/* Messages Area */}
+        <div className="flex-1 overflow-y-auto p-4 space-y-4">
           <MessageList messages={messages} />
         </div>
-      </section>
 
-      {error ? (
-        <div
-          role="alert"
-          className="rounded-2xl border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive"
-        >
-          {error.message}
-        </div>
-      ) : null}
+        {error ? (
+          <div
+            role="alert"
+            className="rounded-2xl border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive m-4"
+          >
+            {error.message}
+          </div>
+        ) : null}
 
-      <form onSubmit={handleSubmit}>
-        <div className="flex flex-col gap-4 rounded-2xl border border-border/60 bg-background/95 p-4 shadow-soft-sm sm:p-6">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:gap-6">
-            <fieldset className="flex-1 space-y-2" disabled={isSending}>
-              <label
-                htmlFor="message-prompt"
-                className="text-sm font-medium text-foreground"
-              >
-                Message prompt
-              </label>
-              <textarea
-                id="message-prompt"
-                name="message"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                className="min-h-[120px] w-full resize-none rounded-xl border border-border/70 bg-muted/20 px-4 py-3 text-base text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60"
-                placeholder="Type your message..."
-                disabled={isSending}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && !e.shiftKey) {
-                    e.preventDefault();
-                    if (!isSending && input.trim()) {
-                      sendMessage(
-                        { text: input },
-                        {
-                          body: {
-                            model: selectedModel,
-                          },
-                        }
-                      );
-                      setInput("");
+        {/* Input Area */}
+        <form onSubmit={handleSubmit} className="w-full divide-y divide-border overflow-hidden rounded-xl border border-border bg-card shadow-sm mt-4">
+          <textarea 
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            className="w-full resize-none rounded-none border-none p-3 shadow-none outline-none ring-0 bg-transparent focus-visible:ring-0 text-foreground placeholder-muted-foreground"
+            placeholder="What would you like to know?"
+            rows="1"
+            disabled={isSending}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                if (!isSending && input.trim()) {
+                  sendMessage(
+                    { text: input },
+                    {
+                      body: {
+                        model: selectedModel,
+                      },
                     }
-                  }
-                }}
-              />
-            </fieldset>
-
-            <div className="flex w-full flex-col gap-3 sm:w-60">
-              <fieldset className="space-y-2" disabled={isSending}>
-                <legend className="text-sm font-medium text-foreground">
-                  Model selection
-                </legend>
-                <select
-                  value={selectedModel}
-                  onChange={(e) => handleSetModel(e.target.value as ChatModelId)}
-                  className="inline-flex h-11 w-full items-center justify-between gap-3 rounded-xl border border-border/70 bg-muted/20 px-4 text-sm text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60"
+                  );
+                  setInput("");
+                }
+              }
+            }}
+          />
+          <div className="flex items-center justify-between p-1">
+            <div className="flex items-center gap-1">
+              {/* Model Selector */}
+              <select
+                value={selectedModel}
+                onChange={(e) => handleSetModel(e.target.value as ChatModelId)}
+                className="flex items-center gap-2 px-3 py-2 rounded-lg text-muted-foreground hover:bg-accent hover:text-foreground transition-colors font-medium bg-transparent border-none outline-none"
+              >
+                {chatModels.map((model) => (
+                  <option key={model.id} value={model.id}>
+                    {model.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="flex items-center gap-1">
+              {/* Stop Button (shown when streaming) */}
+              {isSending && (
+                <button
+                  type="button"
+                  className="p-2 rounded-lg text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
                 >
-                  {chatModels.map((model) => (
-                    <option key={model.id} value={model.id}>
-                      {model.label}
-                    </option>
-                  ))}
-                </select>
-              </fieldset>
-
-              <input type="hidden" name="model" value={selectedModel} />
-              
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <rect x="6" y="6" width="12" height="12" strokeWidth="2"></rect>
+                  </svg>
+                </button>
+              )}
+              {/* Send Button */}
               <button
                 type="submit"
                 disabled={isSending || !input?.trim()}
-                className="inline-flex h-11 items-center justify-center rounded-xl border border-border bg-accent text-sm font-semibold text-accent-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-70"
+                className="p-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:cursor-not-allowed disabled:opacity-70"
               >
-                {isSending ? "Sending…" : "Send message"}
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                </svg>
               </button>
             </div>
           </div>
-        </div>
-      </form>
+        </form>
+      </div>
     </div>
   );
 }

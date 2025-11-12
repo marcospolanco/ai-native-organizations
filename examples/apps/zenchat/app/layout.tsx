@@ -53,9 +53,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <div className="mx-auto w-full max-w-5xl px-5 py-8">{children}</div>
               </main>
               <footer className="border-t border-border/60 bg-background/80 py-4">
-                <div className="mx-auto flex w-full max-w-5xl items-center justify-between px-5 text-xs text-muted-foreground">
+                <div className="mx-auto flex w-full max-w-5xl items-center justify-center px-5 text-xs text-muted-foreground">
                   <span>© {new Date().getFullYear()} Zen Chat</span>
-                  <span>Phase 0 baseline</span>
                 </div>
               </footer>
             </div>
