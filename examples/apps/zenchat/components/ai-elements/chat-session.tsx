@@ -125,25 +125,25 @@ export function ChatSession({ initialMessages = [] }: ChatSessionProps) {
   const isSending = isLoading;
 
   return (
-    <div className="max-w-4xl mx-auto p-6 relative size-full h-screen border border-border rounded-lg bg-card">
-      <div className="flex flex-col h-full">
+    <div className="max-w-4xl mx-auto h-full flex flex-col">
+      <div className="flex flex-col h-full min-h-0">
         
         {/* Messages Area */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        <div className="flex-1 min-h-0 overflow-y-auto p-4 space-y-4">
           <MessageList messages={messages} />
         </div>
 
         {error ? (
           <div
             role="alert"
-            className="rounded-2xl border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive m-4"
+            className="rounded-2xl border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive mx-4 mb-4 flex-shrink-0"
           >
             {error.message}
           </div>
         ) : null}
 
         {/* Input Area */}
-        <form onSubmit={handleSubmit} className="w-full divide-y divide-border overflow-hidden rounded-xl border border-border bg-card shadow-sm mt-4">
+        <form onSubmit={handleSubmit} className="w-full divide-y divide-border overflow-hidden rounded-xl border border-border bg-card shadow-sm mt-4 flex-shrink-0">
           <textarea 
             value={input}
             onChange={(e) => setInput(e.target.value)}

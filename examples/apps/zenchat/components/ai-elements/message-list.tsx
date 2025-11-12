@@ -9,7 +9,7 @@ type MessageListProps = {
 export function MessageList({ messages }: MessageListProps) {
   return (
     <ol
-      className="relative flex h-full flex-col overflow-y-auto"
+      className="relative flex flex-col"
       data-testid="message-list"
     >
       {messages.length ? (
