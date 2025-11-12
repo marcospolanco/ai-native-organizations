@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//Users/marcospolanco/Developer/open/ai-elements/components/ai-elements/**)",
+      "Read(//Users/marcospolanco/Developer/open/ai-elements/app/**)",
+      "Read(//Users/marcospolanco/Developer/open/ai-elements/components/**)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

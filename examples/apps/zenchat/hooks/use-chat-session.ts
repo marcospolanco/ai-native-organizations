@@ -64,37 +64,28 @@ export function useChatSession(options: UseChatSessionOptions = {}): UseChatSess
   const hasSeededRef = useRef(false);
   // Track which stream is associated with which assistant message to prevent cross-contamination
   const streamToMessageMapRef = useRef<Map<StreamableValue<string>, string>>(new Map());
-  // Manual accumulation ref as a fallback/workaround
-  const manualStreamedTextRef = useRef<string>("");
 
   const [streamedText, streamError, isPendingStream] = useStreamableValue(activeStream);
   
   // Debug: Log what useStreamableValue returns
   useEffect(() => {
     if (activeStream) {
-      console.log("useStreamableValue result", {
+      console.log("useStreamableValue hook result", {
         hasActiveStream: !!activeStream,
         streamedTextType: typeof streamedText,
         streamedTextValue: streamedText,
         streamedTextLength: typeof streamedText === "string" ? streamedText.length : 0,
         isPendingStream,
         hasError: !!streamError,
-        manualAccumulatedLength: manualStreamedTextRef.current.length,
+        streamErrorValue: streamError,
       });
-      
-      // Manual accumulation as fallback - if useStreamableValue returns a string, accumulate it
-      if (typeof streamedText === "string" && streamedText.length > manualStreamedTextRef.current.length) {
-        manualStreamedTextRef.current = streamedText;
-        console.log("Manual accumulation updated", {
-          newLength: streamedText.length,
-          preview: streamedText.substring(0, 100),
-        });
-      }
-    } else {
-      // Reset manual accumulation when stream is cleared
-      manualStreamedTextRef.current = "";
     }
   }, [activeStream, streamedText, isPendingStream, streamError]);
+  
+  // Use streamedText directly - useStreamableValue already provides reactive updates
+  // When activeStream changes, useStreamableValue automatically resets streamedText
+  // No need for intermediate state that can get out of sync
+  const effectiveStreamedText = typeof streamedText === "string" ? streamedText : "";
 
   // Initialize messages only once on mount if initialMessages are provided
   // and store is empty
@@ -116,19 +107,8 @@ export function useChatSession(options: UseChatSessionOptions = {}): UseChatSess
   }, []); // Only run once on mount - intentionally empty deps
 
   useEffect(() => {
-    // Debug: Log every time the effect runs
-    console.log("useChatSession effect running", {
-      hasAssistantMessageId: !!assistantMessageId,
-      hasActiveStream: !!activeStream,
-      streamedTextType: typeof streamedText,
-      streamedTextLength: typeof streamedText === "string" ? streamedText.length : 0,
-      isPendingStream,
-      streamError: !!streamError,
-    });
-
     // Only process if we have an active stream and assistant message ID
     if (!assistantMessageId || !activeStream) {
-      console.log("Effect early return - missing assistantMessageId or activeStream");
       return;
     }
 
@@ -191,28 +171,16 @@ export function useChatSession(options: UseChatSessionOptions = {}): UseChatSess
 
     // Update body with streamed text if we have content
     // We've already verified this stream belongs to this message at the top of the effect
-    // streamedText can be undefined initially (when stream starts), empty string (if stream has no content yet), or a string (when content is streaming)
+    // Use effectiveStreamedText which is a reactive state value
     // IMPORTANT: Always update if we have streamed content, even if it seems the same
     // This ensures we capture all updates, especially during rapid streaming
-    const hasStreamedContent = typeof streamedText === "string" && streamedText !== "";
-    const contentIsDifferent = hasStreamedContent && streamedText !== assistantMessage.body;
-    
-    // Debug logging during streaming - log every update to track what's happening
-    if (hasStreamedContent) {
-      console.log("Streaming update", {
-        assistantMessageId,
-        streamedTextLength: streamedText.length,
-        streamedTextPreview: streamedText.substring(0, 100),
-        currentBodyLength: assistantMessage.body?.length || 0,
-        contentIsDifferent,
-        isPendingStream,
-      });
-    }
+    const hasStreamedContent = effectiveStreamedText !== "";
+    const contentIsDifferent = hasStreamedContent && effectiveStreamedText !== assistantMessage.body;
     
     // Always update if we have streamed content
     // This ensures we capture incremental updates even if they seem redundant
     if (hasStreamedContent) {
-      update.body = streamedText;
+      update.body = effectiveStreamedText;
     }
 
     // Update meta based on stream state
@@ -246,69 +214,37 @@ export function useChatSession(options: UseChatSessionOptions = {}): UseChatSess
         return;
       }
       
-      // Get final content from streamedText and message body
-      // IMPORTANT: During streaming, we update message.body with streamedText incrementally
-      // So by the time the stream completes, message.body should have the accumulated content
-      // However, streamedText might have the final accumulated value too
-      // We prioritize message.body since it was updated during streaming and is more reliable
-      const streamText = typeof streamedText === "string" ? streamedText : "";
+      // CRITICAL: Get the final streamed text directly from useStreamableValue
+      // Don't rely on effectiveStreamedText which might be stale
+      // Read streamedText fresh at completion time
+      const finalStreamedText = typeof streamedText === "string" ? streamedText : "";
       const messageBody = finalAssistantMessage.body || "";
       
-      // Debug logging to understand what's happening
-      console.log("Stream completion check", {
-        assistantMessageId,
-        streamTextType: typeof streamedText,
-        streamTextLength: streamText?.length,
-        streamTextPreview: streamText?.substring(0, 100),
-        messageBodyLength: messageBody?.length,
-        messageBodyPreview: messageBody?.substring(0, 100),
-        isPendingStream,
-      });
+      // Use whichever has more content (streamedText should be the source of truth at completion)
+      const finalContent = finalStreamedText || messageBody;
       
-      // Determine final content - prioritize messageBody since it was updated during streaming
-      // If messageBody has content, use it (it's the source of truth from incremental updates)
-      // If messageBody is empty but streamText has content, use streamText (fallback)
-      const finalContent = messageBody || streamText;
-      
-      // Save final content to message body
-      // If streamText has more content than messageBody, use streamText (shouldn't happen, but safety)
-      // Otherwise, just ensure messageBody is set and clear meta
-      if (streamText && streamText.trim() !== "" && streamText.length > messageBody.length) {
-        // StreamText has more content - use it (shouldn't normally happen)
+      // Always save the final content if we have it
+      if (finalContent && finalContent.trim() !== "") {
         updateMessage(assistantMessageId, {
-          body: streamText,
+          body: finalContent,
           meta: undefined,
         });
-      } else if (finalContent && finalContent.trim() !== "") {
-        // Final content exists - ensure it's saved and clear meta
-        if (finalContent !== messageBody) {
-          updateMessage(assistantMessageId, {
-            body: finalContent,
-            meta: undefined,
-          });
-        } else {
-          // Content already matches, just clear meta
-          updateMessage(assistantMessageId, {
-            meta: undefined,
-          });
-        }
       }
       
       // Check if we actually received content
-      // Prioritize messageBody since it was updated during streaming
-      // Fall back to streamText if messageBody is empty
-      const hasContent = (messageBody && messageBody.trim() !== "") || (streamText && streamText.trim() !== "");
+      const hasContent = finalContent && finalContent.trim() !== "";
       
       if (!hasContent) {
         // Stream completed but no content received
         // Log as warning since this could be a legitimate empty response
         console.warn("Stream completed with no content", {
           assistantMessageId,
-          streamTextType: typeof streamedText,
-          streamTextLength: streamText?.length,
+          streamTextLength: finalStreamedText?.length,
           messageBodyLength: messageBody?.length,
           isPendingStream,
+          streamedTextType: typeof streamedText,
           streamedTextValue: streamedText,
+          effectiveStreamedText,
         });
         setError("No response received from the AI. Please check your API configuration and try again.");
         updateMessage(assistantMessageId, {
@@ -336,7 +272,7 @@ export function useChatSession(options: UseChatSessionOptions = {}): UseChatSess
     setError,
     setStreaming,
     streamError,
-    streamedText,
+    streamedText, // Use streamedText directly instead of effectiveStreamedText to ensure effect runs on updates
     updateMessage,
     selectedModel,
   ]);
@@ -417,6 +353,8 @@ export function useChatSession(options: UseChatSessionOptions = {}): UseChatSess
             assistantId,
             hasStream: !!result.stream,
             streamType: typeof result.stream,
+            streamKeys: result.stream ? Object.keys(result.stream) : [],
+            streamValue: result.stream,
           });
           
           // CRITICAL: Map this stream to this assistant message BEFORE setting state
@@ -436,7 +374,11 @@ export function useChatSession(options: UseChatSessionOptions = {}): UseChatSess
           // Order matters: message exists -> mapping exists -> state set -> effect can process
           setAssistantMessageId(assistantId);
           setActiveStream(result.stream);
-          console.log("Stream state set", { assistantId, hasStream: !!result.stream });
+          console.log("Stream state set", { 
+            assistantId, 
+            hasStream: !!result.stream,
+            activeStreamSet: true,
+          });
           timer(); // Stop timer when stream is set up
   
           // Track streaming started
