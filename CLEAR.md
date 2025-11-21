@@ -83,3 +83,9 @@ graph TD
     R -- Yes --> V
     class V final
 ```
+
+---
+
+**Author:** Marcos Polanco  
+**LinkedIn:** [https://www.linkedin.com/in/marcospolanco/](https://www.linkedin.com/in/marcospolanco/)  
+**Email:** marcos@ioncrest.com
